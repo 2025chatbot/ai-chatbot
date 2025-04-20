@@ -1,0 +1,24 @@
+{
+  "companyname": "apple",
+  "companyid": "7777",
+  "date": "202500302",
+  "author": "이상환",
+  "messages": [
+    {
+      "role": "system",
+      "content": "{\"hospitalName\":\"애플 병원\",\"director\":\"오소리\",\"daysOff\":[\"월요일\",\"화요일\",\"일요일\"],\"workingHours\":\"10:17am~8:21pm\",\"phoneNumber\":\"02-910-9090\",\"email\":\"apple8888@gmail.com\",\"lunchTime\":\"12시 30분부터 1시30분까지\",\"majorDepartments\":[\"이비인후과\"],\"customerService\":\"진심으로 대합니다.\"}"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"대통령 이름은?\",\"answer\":\"오바마\"},{\"question\":\"간호사 이름은?\",\"answer\":\"아이유\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"몇층에 있나요?\",\"answer\":\"3층\"},{\"question\":\"면적이 어떻게 되나요?\",\"answer\":\"100평\"},{\"question\":\"벽지는 무슨 색인가요?\",\"answer\":\"노란색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"대통령 이름은?\",\"answer\":\"\"},{\"question\":\"간호사 이름은?\",\"answer\":\"유재석\"},{\"question\":\"벽지 색깔은 무슨색인가요?\",\"answer\":\"\"},{\"question\":\"병원 주소는?\",\"answer\":\"\"}]"
+    }
+  ]
+}

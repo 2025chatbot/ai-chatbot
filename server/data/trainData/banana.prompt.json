@@ -1,0 +1,16 @@
+{
+  "companyname": "banana",
+  "companyid": "34a4",
+  "date": "20250421",
+  "author": "system",
+  "messages": [
+    {
+      "role": "system",
+      "content": "{\"hospitalName\":\"바나나병원\",\"director\":\"김원숭\",\"address\":\"서울시 행복구\"}"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원장 이름은?\",\"answer\":\"김원숭\"},{\"question\":\"병원 주소는?\",\"answer\":\"서울시 행복구\"}]"
+    }
+  ]
+}
