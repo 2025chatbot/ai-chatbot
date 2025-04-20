@@ -4,7 +4,7 @@
 
 ### 1. 저장소 클론
 ```bash
-git clone [레포주소]
+git clone https://github.com/2025chatbot/ai-chatbot.git
 cd ai-chatbot
 ```
 
