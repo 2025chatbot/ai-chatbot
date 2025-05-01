@@ -87,21 +87,37 @@ export function appendTrainData(newMessages, companyname) {
 
 export function getNoInfoQueries(companyname) {
     const filePath = path.resolve('data/noInfoData', `${companyname}.inInfo.json`);
+
     try {
         if (!fs.existsSync(filePath)) return [];
-        const data = fs.readFileSync(filePath, 'utf-8');
-        return JSON.parse(data);
+
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        let data = JSON.parse(raw);
+
+        // 문자열 배열이면 객체 배열로 변환 후 파일에 다시 저장
+        if (typeof data[0] === 'string') {
+            data = data.map(q => ({ question: q, count: 1 }));
+
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+            console.log(`[getNoInfoQueries] '${companyname}' inInfo.json 마이그레이션 완료`);
+        }
+
+        return data;
     } catch (e) {
         console.error('[getNoInfoQueries] 실패:', e);
         return [];
     }
 }
 
+
 export function savenoInfoQuery(noinfoquery, companyname) {
     const filePath = path.resolve('data/noInfoData', `${companyname}.inInfo.json`);
-    let dataArray = getNoInfoQueries(companyname); // [{ question, count }]
+    let dataArray = getNoInfoQueries(companyname);
+
+    if (!Array.isArray(dataArray)) dataArray = [];
 
     const existing = dataArray.find(item => item.question === noinfoquery.content);
+
     if (existing) {
         existing.count += 1;
     } else {
@@ -109,25 +125,28 @@ export function savenoInfoQuery(noinfoquery, companyname) {
     }
 
     saveJsonToFile(dataArray, filePath);
-    console.log(`[savenoInfoQuery] 추가됨: ${noinfoquery.content}`);
+    console.log(`[savenoInfoQuery] 저장됨: ${noinfoquery.content}`);
 }
-
 
 export function removeNoInfoQuestions(questionsToRemove, companyname) {
     const filePath = path.resolve('data/noInfoData', `${companyname}.inInfo.json`);
 
     try {
         if (!fs.existsSync(filePath)) return;
+
         const existing = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-        const updated = existing.filter(q => !questionsToRemove.includes(q));
-        fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), 'utf-8');
+        const updated = existing.filter(
+            item => !questionsToRemove.includes(item.question)
+        );
 
+        fs.writeFileSync(filePath, JSON.stringify(updated, null, 2), 'utf-8');
         console.log(`[removeNoInfoQuestions] ${questionsToRemove.length}개 질문 제거됨`);
     } catch (err) {
         console.error('[removeNoInfoQuestions] 처리 실패:', err);
     }
 }
+
 
 export const promptCache = {}; // 회사별 prompt 저장소 (메모리 캐시)
 

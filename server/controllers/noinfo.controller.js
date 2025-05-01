@@ -5,6 +5,7 @@ import {
     saveQnAData,
     removeNoInfoQuestions, appendTrainData, reloadPrompt
 } from '../utils/util.js';
+import {chatSessions} from "../services/openai.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,16 +16,21 @@ export const getNoInfoQuestions = (req, res) => {
 
     try {
         if (!fs.existsSync(filePath)) return res.json([]);
+        let data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        const sorted = data.sort((a, b) => b.count - a.count); // count 기준 내림차순
-        res.json(sorted);
+        // 🔧 문자열일 경우 자동 변환
+        if (typeof data[0] === 'string') {
+            data = data.map(q => ({ question: q, count: 1 }));
+        }
+
+        // count 기준 정렬
+        data.sort((a, b) => b.count - a.count);
+        res.json(data);
     } catch (err) {
         console.error('[GET noinfo] 실패:', err);
-        res.status(500).json({ error: '질문 목록을 불러오지 못했습니다.' });
+        res.status(500).json({ error: '질문 목록 불러오기 실패' });
     }
 };
-
 
 // POST /noinfo/:company → 답변된 질문 저장 + 학습 반영
 export const submitNoInfoAnswers = (req, res) => {
@@ -52,6 +58,13 @@ export const submitNoInfoAnswers = (req, res) => {
 
         // 4. 수정된 prompt 실시간 반영
         reloadPrompt(company);
+
+        // 기존 세션 삭제
+        for (const chatid of chatSessions.keys()) {
+            if (chatid.startsWith(`${company}:`)) {
+                chatSessions.delete(chatid);
+            }
+        }
 
         res.json({ success: true, updated: filtered.length });
     } catch (err) {

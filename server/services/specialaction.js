@@ -27,8 +27,15 @@ export function parseLLMMsg(responseMessage, messages, companyname) {
         return { content: cancelMsg(pJson) };
     } else if (pJson.request === 'cancelcheck') {
         return { content: cancelCheckMsg(pJson) };
-    } else if (responseMessage.content.startsWith('죄송')) {
-        savenoInfoQuery(messages[messages.length - 2], companyname);
+    } else if (responseMessage.content.startsWith('죄송') ||
+        responseMessage.content.includes('제공되지') ||
+        responseMessage.content.includes('찾을 수 없습니다') ||
+        responseMessage.content.includes('정보가 없습니다')) {
+        const userMessage = [...messages].reverse().find(m => m.role === 'user');
+        if (userMessage) {
+            savenoInfoQuery({ content: userMessage.content }, companyname);
+        }
+
     }
 
     return {
