@@ -120,3 +120,21 @@ export function removeNoInfoQuestions(questionsToRemove, companyname) {
         console.error('[removeNoInfoQuestions] 처리 실패:', err);
     }
 }
+
+export const promptCache = {}; // 회사별 prompt 저장소 (메모리 캐시)
+
+export function reloadPrompt(company) {
+    const filePath = path.resolve('data/trainData', `${company}.prompt.json`);
+    if (!fs.existsSync(filePath)) {
+        console.warn(`[reloadPrompt] ${company}의 prompt 파일 없음`);
+        return;
+    }
+
+    try {
+        const promptData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        promptCache[company] = promptData;
+        console.log(`[reloadPrompt] ${company} prompt 다시 로딩 완료`);
+    } catch (err) {
+        console.error('[reloadPrompt] 파일 읽기 실패:', err);
+    }
+}

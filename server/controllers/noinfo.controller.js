@@ -3,8 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {
     saveQnAData,
-    saveTrainData,
-    removeNoInfoQuestions, appendTrainData, appendQnAData
+    removeNoInfoQuestions, appendTrainData, reloadPrompt
 } from '../utils/util.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -47,6 +46,9 @@ export const submitNoInfoAnswers = (req, res) => {
         // 3. noInfo에서 제거
         const questionsToRemove = filtered.map(q => q.question);
         removeNoInfoQuestions(questionsToRemove, company);
+
+        // 4. 수정된 prompt 실시간 반영
+        reloadPrompt(company);
 
         res.json({ success: true, updated: filtered.length });
     } catch (err) {
