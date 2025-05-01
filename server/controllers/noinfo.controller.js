@@ -56,3 +56,18 @@ export const submitNoInfoAnswers = (req, res) => {
         res.status(500).json({ error: '질문 반영에 실패했습니다.' });
     }
 };
+// DELETE /noinfo/:company → 질문 삭제
+export const deleteNoInfoQuestion = (req, res) => {
+    const { company } = req.params;
+    const { question } = req.body; // string
+
+    if (!question) return res.status(400).json({ error: '삭제할 질문이 없습니다.' });
+
+    try {
+        removeNoInfoQuestions([question], company);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[DELETE noinfo] 실패:', err);
+        res.status(500).json({ error: '질문 삭제 실패' });
+    }
+};

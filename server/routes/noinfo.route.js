@@ -1,15 +1,16 @@
 import express from 'express';
 import {
     getNoInfoQuestions,
-    submitNoInfoAnswers
+    submitNoInfoAnswers,
+    deleteNoInfoQuestion
 } from '../controllers/noinfo.controller.js';
 
 const router = express.Router();
 
-// GET: /noinfo/:company
 router.get('/noinfo/:company', getNoInfoQuestions);
 
-// POST: /noinfo/:company
 router.post('/noinfo/:company', submitNoInfoAnswers);
+
+router.delete('/noinfo/:company', deleteNoInfoQuestion);
 
 export default router;

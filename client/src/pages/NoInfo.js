@@ -20,10 +20,30 @@ const NoInfo = () => {
         setQnaList(updated);
     };
 
-    const removeQna = (index) => {
-        const updated = [...qnaList];
-        updated.splice(index, 1);
-        setQnaList(updated);
+    const removeQna = async (index) => {
+        const target = qnaList[index];
+        const confirmDelete = window.confirm(`"${target.question}" 질문을 삭제하시겠습니까?`);
+        if (!confirmDelete) return;
+
+        try {
+            const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: target.original })
+            });
+
+            if (!res.ok) {
+                alert('서버 삭제 실패');
+                return;
+            }
+
+            const updated = [...qnaList];
+            updated.splice(index, 1);
+            setQnaList(updated);
+        } catch (err) {
+            console.error('삭제 요청 실패:', err);
+            alert('삭제 요청 중 오류 발생');
+        }
     };
 
     const handleSubmit = async () => {
