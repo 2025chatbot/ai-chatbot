@@ -1,6 +1,10 @@
-// src/pages/NoInfo.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import {
+    Box, Typography, TextField, Button,
+    Paper, Stack, IconButton, Chip
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const NoInfo = () => {
     const { company } = useParams();
@@ -10,7 +14,12 @@ const NoInfo = () => {
         fetch(`http://localhost:3000/noinfo/${company}`)
             .then(res => res.json())
             .then(data => {
-                setQnaList(data.map(q => ({ original: q, question: q, answer: '' })));
+                setQnaList(data.map(q => ({
+                    original: q.question,
+                    question: q.question,
+                    answer: '',
+                    count: q.count
+                })));
             });
     }, [company]);
 
@@ -22,27 +31,20 @@ const NoInfo = () => {
 
     const removeQna = async (index) => {
         const target = qnaList[index];
-        const confirmDelete = window.confirm(`"${target.question}" 질문을 삭제하시겠습니까?`);
-        if (!confirmDelete) return;
+        if (!window.confirm(`"${target.question}" 질문을 삭제할까요?`)) return;
 
-        try {
-            const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: target.original })
-            });
+        const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: target.original })
+        });
 
-            if (!res.ok) {
-                alert('서버 삭제 실패');
-                return;
-            }
-
+        if (res.ok) {
             const updated = [...qnaList];
             updated.splice(index, 1);
             setQnaList(updated);
-        } catch (err) {
-            console.error('삭제 요청 실패:', err);
-            alert('삭제 요청 중 오류 발생');
+        } else {
+            alert('서버 삭제 실패');
         }
     };
 
@@ -58,8 +60,7 @@ const NoInfo = () => {
 
         if (res.ok) {
             alert('학습 반영 완료!');
-            // 답변 안 된 질문만 다시 남기기
-            const remaining = qnaList.filter(q => !q.answer);
+            const remaining = qnaList.filter(q => !valid.find(v => v.original === q.original));
             setQnaList(remaining);
         } else {
             alert('저장 실패');
@@ -67,50 +68,74 @@ const NoInfo = () => {
     };
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>질문에 답해주세요</h2>
+        <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 6 }}>
+            <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
+                답변 대기 질문 목록
+            </Typography>
+
             {qnaList.length === 0 ? (
-                <p>미응답 질문이 없습니다.</p>
+                <Typography textAlign="center" color="text.secondary">새로운 질문이 없습니다.</Typography>
             ) : (
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSubmit();
-                    }}
-                >
-                    {qnaList.map((qna, index) => (
-                        <div key={index} style={{ marginBottom: '1.5rem' }}>
-                            <input
-                                type="text"
-                                value={qna.question}
-                                onChange={(e) => updateQna(index, 'question', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginBottom: '0.5rem' }}
-                            />
-                            <input
-                                type="text"
-                                placeholder="답변 입력..."
-                                value={qna.answer}
-                                onChange={(e) => updateQna(index, 'answer', e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => removeQna(index)}
-                                style={{ marginTop: '4px', color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
+                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                    <Stack spacing={3}>
+                        {qnaList.map((qna, index) =>
+                        {
+                            console.log(`[${index}] value:`, qna.question);
+                            return (
+                            <Paper
+                                key={index}
+                                elevation={3}
+                                sx={{
+                                    p: 3,
+                                    borderRadius: 3,
+                                    position: 'relative',
+                                    backgroundColor: '#fafafa'
+                                }}
                             >
-                                삭제
-                            </button>
-                        </div>
-                    ))}
-                    <button
-                        type="submit"
-                        style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                        학습 반영
-                    </button>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                    <Chip
+                                        label={`문의 횟수: ${qna.count || 1}`}
+                                        color="primary"
+                                        size="small"
+                                    />
+                                    <IconButton size="small" onClick={() => removeQna(index)}>
+                                        <DeleteIcon fontSize="small" color="error" />
+                                    </IconButton>
+                                </Box>
+
+                                <TextField
+                                    label="질문"
+                                    variant="outlined"
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
+                                    value={qna.question}
+                                    onChange={(e) => updateQna(index, 'question', e.target.value)}
+                                    sx={{ mb: 2 }}
+                                />
+
+                                <TextField
+                                    label="답변"
+                                    placeholder="여기에 답변을 작성하세요"
+                                    variant="outlined"
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
+                                    value={qna.answer}
+                                    onChange={(e) => updateQna(index, 'answer', e.target.value)}
+                                />
+                            </Paper>);}
+                        )}
+
+                        <Box textAlign="center" mt={4}>
+                            <Button type="submit" variant="contained" size="large">
+                                답변 등록
+                            </Button>
+                        </Box>
+                    </Stack>
                 </form>
             )}
-        </div>
+        </Box>
     );
 };
 
