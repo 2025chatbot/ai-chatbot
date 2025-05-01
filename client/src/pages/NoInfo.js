@@ -10,7 +10,7 @@ const NoInfo = () => {
         fetch(`http://localhost:3000/noinfo/${company}`)
             .then(res => res.json())
             .then(data => {
-                setQnaList(data.map(q => ({ question: q, answer: '' })));
+                setQnaList(data.map(q => ({ original: q, question: q, answer: '' })));
             });
     }, [company]);
 

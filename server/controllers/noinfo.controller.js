@@ -26,25 +26,25 @@ export const getNoInfoQuestions = (req, res) => {
 // POST /noinfo/:company → 답변된 질문 저장 + 학습 반영
 export const submitNoInfoAnswers = (req, res) => {
     const { company } = req.params;
-    const qaList = req.body; // [{ question, answer }]
+    const qaList = req.body; // [{ original, question, answer }]
 
     try {
-        const filtered = qaList.filter(q => q.question && q.answer);
+        const filtered = qaList.filter(q => q.question && q.answer); // [{ question, answer }]
 
-        if (filtered.length === 0) return res.json({ success: false, updated: 0 });
+        const simplified = filtered.map(q => ({ question: q.question, answer: q.answer }));
 
         // 1. 질문-답변을 questions.json에 저장
-        saveQnAData(filtered, company);
+        saveQnAData(simplified, company);
 
         // 2. prompt.json에 학습 메시지 추가
         const systemMsg = {
             role: 'system',
-            content: JSON.stringify(filtered)
+            content: JSON.stringify(simplified)
         };
         appendTrainData([systemMsg], company);
 
         // 3. noInfo에서 제거
-        const questionsToRemove = filtered.map(q => q.question);
+        const questionsToRemove = filtered.map(q => q.original); // 수정 전 기준으로 제거
         removeNoInfoQuestions(questionsToRemove, company);
 
         // 4. 수정된 prompt 실시간 반영
