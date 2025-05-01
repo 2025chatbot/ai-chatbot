@@ -15,13 +15,16 @@ export const getNoInfoQuestions = (req, res) => {
 
     try {
         if (!fs.existsSync(filePath)) return res.json([]);
+
         const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        res.json(data);
+        const sorted = data.sort((a, b) => b.count - a.count); // count 기준 내림차순
+        res.json(sorted);
     } catch (err) {
         console.error('[GET noinfo] 실패:', err);
         res.status(500).json({ error: '질문 목록을 불러오지 못했습니다.' });
     }
 };
+
 
 // POST /noinfo/:company → 답변된 질문 저장 + 학습 반영
 export const submitNoInfoAnswers = (req, res) => {

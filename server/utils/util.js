@@ -99,11 +99,19 @@ export function getNoInfoQueries(companyname) {
 
 export function savenoInfoQuery(noinfoquery, companyname) {
     const filePath = path.resolve('data/noInfoData', `${companyname}.inInfo.json`);
-    const dataArray = getNoInfoQueries(companyname);
-    dataArray.push(noinfoquery.content);
+    let dataArray = getNoInfoQueries(companyname); // [{ question, count }]
+
+    const existing = dataArray.find(item => item.question === noinfoquery.content);
+    if (existing) {
+        existing.count += 1;
+    } else {
+        dataArray.push({ question: noinfoquery.content, count: 1 });
+    }
+
     saveJsonToFile(dataArray, filePath);
     console.log(`[savenoInfoQuery] 추가됨: ${noinfoquery.content}`);
 }
+
 
 export function removeNoInfoQuestions(questionsToRemove, companyname) {
     const filePath = path.resolve('data/noInfoData', `${companyname}.inInfo.json`);
