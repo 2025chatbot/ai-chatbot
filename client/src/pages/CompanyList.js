@@ -25,10 +25,10 @@ const CompanyList = () => {
                         <li key={name} style={{ marginBottom: '1rem' }}>
                             <strong>{name}</strong><br />
                             <Link to={`/company/${name}`} style={{ marginRight: '1rem' }}>
-                                ▶ 병원 페이지 이동
+                                병원 페이지 이동
                             </Link>
                             <Link to={`/noInfo/${name}`}>
-                                💡 qna 업데이트
+                                Q&A 업데이트
                             </Link>
                         </li>
                     ))}

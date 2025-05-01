@@ -1,62 +1,95 @@
+// src/pages/NoInfo.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 const NoInfo = () => {
     const { company } = useParams();
-    const [questions, setQuestions] = useState([]);
-    const [answers, setAnswers] = useState([]);
+    const [qnaList, setQnaList] = useState([]);
 
     useEffect(() => {
-        fetch(`/noinfo/${company}.inInfo.json`)
-            .then((res) => res.json())
-            .then((data) => {
-                setQuestions(data);
-                setAnswers(Array(data.length).fill(''));
+        fetch(`http://localhost:3000/noinfo/${company}`)
+            .then(res => res.json())
+            .then(data => {
+                setQnaList(data.map(q => ({ question: q, answer: '' })));
             });
     }, [company]);
 
-    const handleChange = (index, value) => {
-        const updated = [...answers];
-        updated[index] = value;
-        setAnswers(updated);
+    const updateQna = (index, field, value) => {
+        const updated = [...qnaList];
+        updated[index][field] = value;
+        setQnaList(updated);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const qnaArray = questions.map((q, i) => ({ question: q, answer: answers[i] }));
+    const removeQna = (index) => {
+        const updated = [...qnaList];
+        updated.splice(index, 1);
+        setQnaList(updated);
+    };
 
-        try {
-            const res = await fetch(`/addqna/${company}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(qnaArray),
-            });
-            const data = await res.json();
-            alert('제출 완료!');
-        } catch (err) {
-            alert('제출 실패');
+    const handleSubmit = async () => {
+        const valid = qnaList.filter(q => q.question && q.answer);
+        if (valid.length === 0) return alert('답변이 입력된 질문이 없습니다.');
+
+        const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(valid)
+        });
+
+        if (res.ok) {
+            alert('학습 반영 완료!');
+            // 답변 안 된 질문만 다시 남기기
+            const remaining = qnaList.filter(q => !q.answer);
+            setQnaList(remaining);
+        } else {
+            alert('저장 실패');
         }
     };
 
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">질문에 답해주세요</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {questions.map((q, index) => (
-                    <div key={index}>
-                        <label className="block mb-1">{q}</label>
-                        <input
-                            type="text"
-                            value={answers[index] || ''}
-                            onChange={(e) => handleChange(index, e.target.value)}
-                            className="w-full border px-2 py-1"
-                        />
-                    </div>
-                ))}
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mt-4">
-                    제출
-                </button>
-            </form>
+        <div style={{ padding: '2rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>질문에 답해주세요</h2>
+            {qnaList.length === 0 ? (
+                <p>미응답 질문이 없습니다.</p>
+            ) : (
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSubmit();
+                    }}
+                >
+                    {qnaList.map((qna, index) => (
+                        <div key={index} style={{ marginBottom: '1.5rem' }}>
+                            <input
+                                type="text"
+                                value={qna.question}
+                                onChange={(e) => updateQna(index, 'question', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ccc', marginBottom: '0.5rem' }}
+                            />
+                            <input
+                                type="text"
+                                placeholder="답변 입력..."
+                                value={qna.answer}
+                                onChange={(e) => updateQna(index, 'answer', e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid #ccc' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => removeQna(index)}
+                                style={{ marginTop: '4px', color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    ))}
+                    <button
+                        type="submit"
+                        style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                        학습 반영
+                    </button>
+                </form>
+            )}
         </div>
     );
 };
