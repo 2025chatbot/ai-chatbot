@@ -19,6 +19,26 @@
     {
       "role": "system",
       "content": "[{\"question\":\"대통령 이름은?\",\"answer\":\"\"},{\"question\":\"간호사 이름은?\",\"answer\":\"유재석\"},{\"question\":\"벽지 색깔은 무슨색인가요?\",\"answer\":\"\"},{\"question\":\"병원 주소는?\",\"answer\":\"\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 바닥 색은?\",\"answer\":\"파란색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 창문 갯수는?\",\"answer\":\"3개\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 바닥 색은?\",\"answer\":\"파란색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 창문 종류는?\",\"answer\":\"네모난 창문\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원장 머리 색은?\",\"answer\":\"검은색\"}]"
     }
   ]
 }

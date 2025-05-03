@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import { sleep } from '../utils/util.js';
+import {promptCache, reloadPrompt, sleep} from '../utils/util.js';
 import * as instructions from '../utils/instructions.js';
 import { parseLLMMsg } from './specialaction.js';
 
@@ -10,14 +10,20 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-const chatSessions = new Map();
+export const chatSessions = new Map();
 
 export async function getCompletionChatGPT(trainData, chatid, prompt) {
     try {
         const [companyname] = chatid.split(':');
 
         if (!chatSessions.has(chatid)) {
-            let messages = [...(trainData[companyname]?.messages || [])];
+            if (!promptCache[companyname]) {
+                reloadPrompt(companyname);
+            }
+            // 최신 캐시가 있으면 최근 갱신된 prompt를, 없으면 초기 trainData 사용
+            const companyPrompt = promptCache[companyname] || trainData[companyname];
+            let messages = [...(companyPrompt?.messages || [])];
+
             messages.push({ role: 'system', content: instructions.reservationInstruction() });
             messages.push({ role: 'system', content: instructions.cancelInstruction() });
             messages.push({ role: 'system', content: instructions.scopeInstruction() });
