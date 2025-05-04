@@ -1,0 +1,28 @@
+{
+  "companyname": "water",
+  "companyid": "dc65",
+  "date": "20250501",
+  "author": "system",
+  "messages": [
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 이름은?\",\"answer\":\"워터병원\"},{\"question\":\"병원장 이름은?\",\"answer\":\"샘물\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"간호사 이름은?\",\"answer\":\"녹차입니다.\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"간호사 이름은?\",\"answer\":\"녹차입니다.\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"창문 몇개?\",\"answer\":\"5개\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"창문 몇개?\",\"answer\":\"5개\"}]"
+    }
+  ]
+}

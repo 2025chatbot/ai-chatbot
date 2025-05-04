@@ -1,0 +1,12 @@
+{
+  "companyname": "grape",
+  "companyid": "1cb3",
+  "date": "20250501",
+  "author": "system",
+  "messages": [
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원장 이름은?\",\"answer\":\"포도\"}]"
+    }
+  ]
+}

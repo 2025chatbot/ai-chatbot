@@ -27,6 +27,26 @@
     {
       "role": "system",
       "content": "[{\"question\":\"축구선수 goat는?\",\"answer\":\"cristiano ronaldo\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 바닥 색은?\",\"answer\":\"파란색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 창문 갯수는?\",\"answer\":\"3개\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 바닥 색은?\",\"answer\":\"파란색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원 창문 종류는?\",\"answer\":\"네모난 창문\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"병원장 머리 색은?\",\"answer\":\"검은색\"}]"
     }
   ]
 }
