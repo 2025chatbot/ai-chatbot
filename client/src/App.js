@@ -15,7 +15,7 @@ const App = () => {
             <Route path="/create" element={<CreateCompany />} />
             <Route path="/companies" element={<CompanyList />} />
             <Route path="/company/:companyname" element={<Company />} />
-            <Route path="/addqna/:company" element={<AddQna />} />
+            <Route path="/addqna/:name" element={<AddQna />} />
             <Route path="/noinfo/:company" element={<NoInfo />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<div style={{ padding: '2rem' }}>잘못된 접근입니다.</div>} />

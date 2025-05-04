@@ -22,6 +22,14 @@
     },
     {
       "role": "system",
+      "content": "[{\"question\":\"병원장 와이프 이름은?\",\"answer\":\"윤수연\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[{\"question\":\"축구선수 goat는?\",\"answer\":\"cristiano ronaldo\"}]"
+    },
+    {
+      "role": "system",
       "content": "[{\"question\":\"병원 바닥 색은?\",\"answer\":\"파란색\"}]"
     },
     {
