@@ -96,12 +96,7 @@ const NoInfo = () => {
                     새로운 질문이 없습니다.
                 </Typography>
             ) : (
-                <form
-                    onSubmit={e => {
-                        e.preventDefault();
-                        handleSubmit();
-                    }}
-                >
+                <>
                     <Stack spacing={3}>
                         {qnaList.map((qna, index) => (
                             <QnaBox key={index}>
@@ -137,12 +132,12 @@ const NoInfo = () => {
                         ))}
 
                         <div style={{ textAlign: 'end', marginTop: '2rem' }}>
-                            <PrimaryButton type="submit" style={{ marginLeft: '0.8rem' }}>
+                            <PrimaryButton onClick={handleSubmit} style={{ marginLeft: '0.8rem' }}>
                                 저장하기
                             </PrimaryButton>
                         </div>
                     </Stack>
-                </form>
+                </>
             )}
         </PageContainer>
     );
