@@ -1,38 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import {PageContainer, PageTitle, StyledInput} from "../components/CommonUI";
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 5rem auto;
-  padding: 2rem;
-  background-color: #fdfdfd;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  box-sizing: border-box;
-`;
 
-const Title = styled.h2`
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 1rem;
-  margin: 1rem auto;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  box-sizing: border-box;
-  display: block;
-
-  &:focus {
-    border-color: #007aff;
-  }
-`;
 
 const CompanyInput = styled.input`
   width: 100%;
@@ -200,8 +170,8 @@ const CreateCompany = () => {
   };
 
   return (
-    <Container>
-      <Title>🏥 새 병원 생성</Title>
+    <PageContainer>
+      <PageTitle>🏥 새 병원 생성</PageTitle>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
         <button
           onClick={() => setMode('manual')}
@@ -242,13 +212,13 @@ const CreateCompany = () => {
           {qnaList.map((qna, idx) => (
             <QnaBox key={idx}>
               <RemoveBtn onClick={() => removeRow(idx)}>×</RemoveBtn>
-              <Input
+              <StyledInput
                 type="text"
                 placeholder="질문"
                 value={qna.question}
                 onChange={(e) => updateQna(idx, 'question', e.target.value)}
               />
-              <Input
+              <StyledInput
                 type="text"
                 placeholder="답변"
                 value={qna.answer}
@@ -366,7 +336,7 @@ const CreateCompany = () => {
           )}
         </div>
       )}
-    </Container>
+    </PageContainer>
   );
 };
 

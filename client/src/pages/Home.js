@@ -1,15 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {LinkButton, LinkList, PageContainer, PageTitle, StyledLinkItem} from "../components/CommonUI";
+
 
 const Home = () => {
     return (
-        <div style={{ padding: '2rem' }}>
-            <h2>병원 관리</h2>
-            <ul>
-                <li><Link to="/companies">📋 병원 목록</Link></li>
-                <li><Link to="/create">➕ 새 병원 생성</Link></li>
-            </ul>
-        </div>
+        <PageContainer>
+            <PageTitle>⚙️ 병원 관리</PageTitle>
+            <LinkList>
+                <LinkButton to="/companies">📋 병원 목록</LinkButton>
+                <LinkButton to="/create">➕ 새 병원 생성</LinkButton>
+            </LinkList>
+        </PageContainer>
     );
 };
 

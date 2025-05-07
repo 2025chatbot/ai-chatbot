@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Typography, TextField, Stack } from '@mui/material';
 import {
-    Box, Typography, TextField, Button,
-    Paper, Stack, IconButton, Chip
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+    PageContainer,
+    PageTitle,
+    QnaBox,
+    RemoveBtn,
+    PrimaryButton,
+    SecondaryButton, StyledInput,
+} from '../components/CommonUI'; // 각 styled 컴포넌트가 있는 파일로 경로 조정 필요
 
 const NoInfo = () => {
     const { company } = useParams();
@@ -14,12 +18,22 @@ const NoInfo = () => {
         fetch(`http://localhost:3000/noinfo/${company}`)
             .then(res => res.json())
             .then(data => {
-                setQnaList(data.map(q => ({
-                    original: q.question,
-                    question: q.question,
-                    answer: '',
-                    count: q.count
-                })));
+                if (Array.isArray(data)) {
+                    setQnaList(
+                        data.map(q => ({
+                            original: q.question,
+                            question: q.question,
+                            answer: '',
+                            count: q.count,
+                        }))
+                    );
+                } else {
+                    setQnaList([]);
+                }
+            })
+            .catch(err => {
+                console.error('❌ fetch 실패:', err);
+                setQnaList([]);
             });
     }, [company]);
 
@@ -49,8 +63,12 @@ const NoInfo = () => {
     };
 
     const handleSubmit = async () => {
+        const unanswered = qnaList.filter(q => q.question && !q.answer);
         const valid = qnaList.filter(q => q.question && q.answer);
-        if (valid.length === 0) return alert('답변이 입력된 질문이 없습니다.');
+
+        if (qnaList.length === 0) return alert('질문이 없습니다.');
+        if (valid.length === 0 && unanswered.length > 0)
+            return alert('답변이 입력된 질문이 없습니다.');
 
         const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
             method: 'POST',
@@ -60,7 +78,9 @@ const NoInfo = () => {
 
         if (res.ok) {
             alert('학습 반영 완료!');
-            const remaining = qnaList.filter(q => !valid.find(v => v.original === q.original));
+            const remaining = qnaList.filter(
+                q => !valid.find(v => v.original === q.original)
+            );
             setQnaList(remaining);
         } else {
             alert('저장 실패');
@@ -68,74 +88,63 @@ const NoInfo = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto', px: 3, py: 6 }}>
-            <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                답변 대기 질문 목록
-            </Typography>
+        <PageContainer>
+            <PageTitle>❓ 답변 대기 질문 목록</PageTitle>
 
             {qnaList.length === 0 ? (
-                <Typography textAlign="center" color="text.secondary">새로운 질문이 없습니다.</Typography>
+                <Typography textAlign="center" color="text.secondary">
+                    새로운 질문이 없습니다.
+                </Typography>
             ) : (
-                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                <form
+                    onSubmit={e => {
+                        e.preventDefault();
+                        handleSubmit();
+                    }}
+                >
                     <Stack spacing={3}>
-                        {qnaList.map((qna, index) =>
-                        {
-                            console.log(`[${index}] value:`, qna.question);
-                            return (
-                            <Paper
-                                key={index}
-                                elevation={3}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 3,
-                                    position: 'relative',
-                                    backgroundColor: '#fafafa'
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Chip
-                                        label={`문의 횟수: ${qna.count || 1}`}
-                                        color="primary"
-                                        size="small"
-                                    />
-                                    <IconButton size="small" onClick={() => removeQna(index)}>
-                                        <DeleteIcon fontSize="small" color="error" />
-                                    </IconButton>
-                                </Box>
-
-                                <TextField
-                                    label="질문"
-                                    variant="outlined"
-                                    fullWidth
-                                    multiline
-                                    minRows={2}
+                        {qnaList.map((qna, index) => (
+                            <QnaBox key={index}>
+                                <RemoveBtn onClick={() => removeQna(index)}>×</RemoveBtn>
+                                <div style={{ marginBottom: '0.75rem' }}>
+    <span style={{
+        fontSize: '0.85rem',
+        backgroundColor: '#e3f2fd',
+        color: '#1565c0',
+        padding: '0.2rem 0.6rem',
+        marginTop : '0.7rem',
+        borderRadius: '6px',
+        fontWeight: 500,
+        display: 'inline-block',
+    }}>
+      문의 횟수: {qna.count || 1}
+    </span>
+                                </div>
+                                <StyledInput
+                                    type="text"
+                                    placeholder="질문"
                                     value={qna.question}
                                     onChange={(e) => updateQna(index, 'question', e.target.value)}
-                                    sx={{ mb: 2 }}
+                                    style={{ marginBottom: '1rem' }}
                                 />
+                                <StyledInput
+                                type="text"
+                                placeholder="답변"
+                                value={qna.answer}
+                                onChange={(e) => updateQna(index, 'answer', e.target.value)}
+                            />
+                            </QnaBox>
+                        ))}
 
-                                <TextField
-                                    label="답변"
-                                    placeholder="여기에 답변을 작성하세요"
-                                    variant="outlined"
-                                    fullWidth
-                                    multiline
-                                    minRows={2}
-                                    value={qna.answer}
-                                    onChange={(e) => updateQna(index, 'answer', e.target.value)}
-                                />
-                            </Paper>);}
-                        )}
-
-                        <Box textAlign="center" mt={4}>
-                            <Button type="submit" variant="contained" size="large">
-                                답변 등록
-                            </Button>
-                        </Box>
+                        <div style={{ textAlign: 'end', marginTop: '2rem' }}>
+                            <PrimaryButton type="submit" style={{ marginLeft: '0.8rem' }}>
+                                저장하기
+                            </PrimaryButton>
+                        </div>
                     </Stack>
                 </form>
             )}
-        </Box>
+        </PageContainer>
     );
 };
 
