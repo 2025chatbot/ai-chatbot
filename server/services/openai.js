@@ -16,20 +16,41 @@ export async function getCompletionChatGPT(trainData, chatid, prompt) {
     try {
         const [companyname] = chatid.split(':');
 
+        const hasSession = chatSessions.has(chatid);
+        const hasPromptCache = promptCache[companyname];
+
+        // 1. 프롬프트가 갱신되어 있지만 세션이 살아있는 경우 → 초기화
+        if (hasSession && hasPromptCache) {
+            const sessionMessages = chatSessions.get(chatid);
+            const cachedMessages = promptCache[companyname]?.messages || [];
+
+            // 세션 메시지와 캐시 메시지 비교 (길이나 내용 다르면 초기화)
+            if (
+                sessionMessages.length !== cachedMessages.length ||
+                JSON.stringify(sessionMessages.slice(0, 3)) !== JSON.stringify(cachedMessages.slice(0, 3))
+            ) {
+                console.log(`[chatGPT] 세션 캐시와 promptCache 불일치 → 세션 초기화`);
+                chatSessions.delete(chatid);
+            }
+        }
+
+        // 2. 새 세션이면 캐시 prompt 또는 trainData로 초기화
         if (!chatSessions.has(chatid)) {
             if (!promptCache[companyname]) {
                 reloadPrompt(companyname);
             }
-            // 최신 캐시가 있으면 최근 갱신된 prompt를, 없으면 초기 trainData 사용
             const companyPrompt = promptCache[companyname] || trainData[companyname];
             let messages = [...(companyPrompt?.messages || [])];
 
             messages.push({ role: 'system', content: instructions.reservationInstruction() });
             messages.push({ role: 'system', content: instructions.cancelInstruction() });
             messages.push({ role: 'system', content: instructions.scopeInstruction() });
+
             chatSessions.set(chatid, messages);
+            console.log(`[chatGPT] 새로운 세션 초기화 완료: ${chatid}`);
         }
 
+        // 3. 사용자 메시지 추가
         const messages = chatSessions.get(chatid);
         messages.push({ role: 'user', content: prompt });
 
@@ -49,6 +70,7 @@ export async function getCompletionChatGPT(trainData, chatid, prompt) {
         return { content: 'OpenAI 처리 실패' };
     }
 }
+
 
 export async function getPromptFromChatGPT(rawdata) {
     try {
