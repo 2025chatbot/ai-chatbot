@@ -4,7 +4,6 @@ import {
     saveTrainData,
     saveJsonToFile,
     parseJsonObject,
-    appendQnAData,
     sleep,
     appendTrainData,
     reloadPrompt
@@ -21,7 +20,7 @@ export const saveQna = async (req, res) => {
         const filtered = qnalist.filter(q => q.question && q.answer);
         
         // QnA 데이터 저장
-        appendQnAData(filtered, companyname);
+        saveQnAData(filtered, companyname);
         
         // prompt.json에 학습 메시지 추가
         const systemMsg = {
