@@ -54,7 +54,7 @@ export const submitNoInfoAnswers = (req, res) => {
 
         try {
             appendTrainData([systemMsg], company);
-            reloadPrompt(company); // ✅ 최신 prompt 반영
+            reloadPrompt(company); // 최신 prompt 반영
         } catch (err) {
             console.error('[appendTrainData] 실패:', err);
             return res.status(500).json({ error: '프롬프트 저장 실패' });

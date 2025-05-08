@@ -53,20 +53,6 @@ export function saveTrainData(promptmsg, companyname) {
     saveJsonToFile(promptmsg, filePath);
 }
 
-export function appendQnAData(qnalist, companyname) {
-    const filePath = path.resolve('data/trainData', `${companyname}.questions.json`);
-    if (!fs.existsSync(filePath)) return;
-
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const promptmsg = JSON.parse(fileContent);
-    const added = {
-        role: 'system',
-        content: JSON.stringify(qnalist),
-    };
-    promptmsg.messages.push(added);
-    saveTrainData(promptmsg, companyname);
-}
-
 //noInfo.js 새로운 답변 추가
 export function appendTrainData(newMessages, companyname) {
     const filePath = path.resolve('data/trainData', `${companyname}.prompt.json`);
