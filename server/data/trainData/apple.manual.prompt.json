@@ -1,0 +1,12 @@
+{
+  "companyname": "apple",
+  "companyid": "manual",
+  "date": "20250515",
+  "author": "manual",
+  "messages": [
+    {
+      "role": "system",
+      "content": "ㄴㅇㄻㄴㄻㄴㅇㄻㄴㅇㄻㄴㅇㄹㄴㅁㄹㅇㄴㅇㄹ"
+    }
+  ]
+}

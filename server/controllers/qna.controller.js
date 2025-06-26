@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import {
     saveQnAData,
@@ -11,28 +12,42 @@ import {
 import { getPromptFromChatGPT, chatSessions } from '../services/openai.js';
 import { reloadTrainData, generateChatResponse } from '../services/chatapi.js';
 
+
+// ✅ QnA + manualText 저장
 export const saveQna = async (req, res) => {
     const companyname = req.params.companyname;
-    const qnalist = req.body;
+    const { qnalist, manualText } = req.body;
 
     try {
-        // 유효한 데이터만 필터링 (빈 질문/답변 제외)
         const filtered = qnalist.filter(q => q.question && q.answer);
-        
-        // QnA 데이터 저장
         saveQnAData(filtered, companyname);
-        
-        // prompt.json에 학습 메시지 추가
+
         const systemMsg = {
             role: 'system',
             content: JSON.stringify(filtered)
         };
         appendTrainData([systemMsg], companyname);
-        
-        // 프롬프트 즉시 리로드
+
+        // ⬇ manualText 저장
+        if (manualText && manualText.trim()) {
+            const manualPrompt = {
+                companyname,
+                companyid: 'manual',
+                date: new Date().toISOString().slice(0, 10).replace(/-/g, ''),
+                author: 'manual',
+                messages: [
+                    {
+                        role: 'system',
+                        content: manualText
+                    }
+                ]
+            };
+            const filePath = path.join('data/trainData', `${companyname}.manual.prompt.json`);
+            saveJsonToFile(manualPrompt, filePath);
+        }
+
         reloadPrompt(companyname);
-        
-        // 기존 채팅 세션 삭제 (새로운 프롬프트 적용을 위해)
+
         for (const chatid of chatSessions.keys()) {
             if (chatid.startsWith(`${companyname}:`)) {
                 chatSessions.delete(chatid);
@@ -40,13 +55,31 @@ export const saveQna = async (req, res) => {
             }
         }
 
-        res.json({ message: 'QnA 저장 및 학습 완료', data: filtered });
+        res.json({ message: 'QnA 및 매뉴얼 저장 완료', data: filtered });
     } catch (err) {
         console.error('[saveQna] 오류:', err);
         res.status(500).json({ message: 'QnA 저장 실패' });
     }
 };
 
+
+// ✅ 기존 QnA 목록 불러오기
+export const getQnaList = async (req, res) => {
+    const companyname = req.params.companyname;
+    const filePath = path.join('data/questionData', `${companyname}.questions.json`);
+
+    try {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const json = JSON.parse(raw);
+        res.json({ qnaList: json });
+    } catch (err) {
+        console.error('[getQnaList] 오류:', err);
+        res.status(500).json({ message: 'QnA 불러오기 실패' });
+    }
+};
+
+
+// ✅ rawdata 처리 (AI 변환용)
 export const handleRawData = async (req, res) => {
     const { companyname, rawdata, jsondata, rawraw } = req.body;
     let msg = { role: 'system', content: '' };
@@ -93,6 +126,8 @@ export const handleRawData = async (req, res) => {
     }
 };
 
+
+// ✅ 챗봇 쿼리
 export const handleQuery = async (req, res) => {
     const { chatid } = req.params;
     const { message } = req.body;
@@ -110,6 +145,8 @@ export const handleQuery = async (req, res) => {
     }
 };
 
+
+// ✅ JSON 파일 업로드 시 즉시 학습
 export const handleFileUpload = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' });

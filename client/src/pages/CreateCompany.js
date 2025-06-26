@@ -94,25 +94,18 @@ const CreateCompany = () => {
   const [mode, setMode] = useState('manual');
   const [showExample, setShowExample] = useState(false);
 
-  const addRow = () => {
-    setQnaList([...qnaList, { question: '', answer: '' }]);
-  };
-
+  const addRow = () => setQnaList([...qnaList, { question: '', answer: '' }]);
   const updateQna = (index, field, value) => {
     const updated = [...qnaList];
     updated[index][field] = value;
     setQnaList(updated);
   };
-
   const removeRow = (index) => {
     const updated = [...qnaList];
     updated.splice(index, 1);
     setQnaList(updated);
   };
-
-  const clearAllQna = () => {
-    setQnaList([]);
-  };
+  const clearAllQna = () => setQnaList([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -122,16 +115,11 @@ const CreateCompany = () => {
       const response = await fetch('http://localhost:3000/company', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyname, questions: qnaList })
+        body: JSON.stringify({ companyname, questions: qnaList }),
       });
-
       const result = await response.json();
-      if (response.ok) {
-        alert('병원 생성 완료!');
-        // 페이지 이동 필요하면 여기에 추가
-      } else {
-        alert(result.message || '생성 실패');
-      }
+      if (response.ok) alert('병원 생성 완료!');
+      else alert(result.message || '생성 실패');
     } catch (err) {
       console.error(err);
       alert('서버 오류 발생');
@@ -142,65 +130,87 @@ const CreateCompany = () => {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      if (!parsed.companyname) {
-        alert('파일에 병원 이름(companyname)이 빠져 있어요. 예시 형식을 참고해서 다시 저장해주세요.');
+      if (!parsed.companyname || !Array.isArray(parsed.questions)) {
+        alert('JSON 형식이 올바르지 않습니다.');
         return;
       }
-      if (!Array.isArray(parsed.questions)) {
-        alert('파일에 질문 목록(questions)이 올바르게 들어있지 않아요. 예시 형식을 확인해주세요.');
-        return;
-      }
-
       const response = await fetch('http://localhost:3000/company', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed)
+        body: JSON.stringify(parsed),
       });
-
       const result = await response.json();
-      if (response.ok) {
-        alert('JSON 업로드로 병원 생성 완료!');
-      } else {
-        alert(result.message || '생성 실패');
-      }
+      if (response.ok) alert('JSON 업로드로 병원 생성 완료!');
+      else alert(result.message || '생성 실패');
     } catch (err) {
       console.error(err);
       alert('JSON 파일 파싱 실패');
     }
   };
 
+  const handleTxtUpload = async (file) => {
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+
+      let cname = '';
+      const questions = [];
+      let currentQ = '', currentA = '';
+
+      for (let line of lines) {
+        if (line.startsWith('병원명:')) {
+          cname = line.replace('병원명:', '').trim();
+        } else if (line.startsWith('Q:')) {
+          if (currentQ && currentA) questions.push({ question: currentQ, answer: currentA });
+          currentQ = line.replace('Q:', '').trim();
+          currentA = '';
+        } else if (line.startsWith('A:')) {
+          currentA = line.replace('A:', '').trim();
+        }
+      }
+      if (currentQ && currentA) questions.push({ question: currentQ, answer: currentA });
+
+      if (!cname) return alert('txt 파일에 병원명: 이 누락되었습니다');
+      if (questions.length === 0) return alert('질문-답변이 1개 이상 필요합니다');
+
+      const response = await fetch('http://localhost:3000/company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyname: cname, questions }),
+      });
+
+      const result = await response.json();
+      if (response.ok) alert('TXT 업로드로 병원 생성 완료!');
+      else alert(result.message || '생성 실패');
+    } catch (err) {
+      console.error(err);
+      alert('TXT 파일 파싱 실패');
+    }
+  };
+
   return (
     <PageContainer>
       <PageTitle>🏥 새 병원 생성</PageTitle>
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-        <button
-          onClick={() => setMode('manual')}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: mode === 'manual' ? '#ccc' : '#f3f3f3',
-            border: 'none',
-            borderTopLeftRadius: '6px',
-            borderBottomLeftRadius: '6px',
-            cursor: 'pointer',
-          }}
-        >
-          직접입력
-        </button>
-        <button
-          onClick={() => setMode('json')}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: mode === 'json' ? '#ccc' : '#f3f3f3',
-            border: 'none',
-            borderTopRightRadius: '6px',
-            borderBottomRightRadius: '6px',
-            cursor: 'pointer',
-          }}
-        >
-          JSON
-        </button>
+        {['manual', 'json', 'txt'].map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: mode === m ? '#ccc' : '#f3f3f3',
+              border: 'none',
+              borderRadius: m === 'manual' ? '6px 0 0 6px' : m === 'txt' ? '0 6px 6px 0' : '0',
+              cursor: 'pointer',
+            }}
+          >
+            {m === 'manual' ? '직접입력' : m === 'json' ? 'JSON' : 'TXT'}
+          </button>
+        ))}
       </div>
-      {mode === 'manual' ? (
+
+      {mode === 'manual' && (
         <form onSubmit={handleSubmit}>
           <CompanyInput
             type="text"
@@ -208,7 +218,6 @@ const CreateCompany = () => {
             value={companyname}
             onChange={(e) => setCompanyname(e.target.value)}
           />
-
           {qnaList.map((qna, idx) => (
             <QnaBox key={idx}>
               <RemoveBtn onClick={() => removeRow(idx)}>×</RemoveBtn>
@@ -226,7 +235,6 @@ const CreateCompany = () => {
               />
             </QnaBox>
           ))}
-
           <ButtonGroup>
             <div>
               <Button type="button" onClick={addRow}>➕ 질문 추가</Button>
@@ -235,15 +243,18 @@ const CreateCompany = () => {
             <Button type="submit" primary>병원 생성하기</Button>
           </ButtonGroup>
         </form>
-      ) : (
+      )}
+
+      {['json', 'txt'].includes(mode) && (
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
             const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.json')) {
-              handleJsonUpload(file);
-            }
+            if (!file) return;
+            if (mode === 'json' && file.name.endsWith('.json')) handleJsonUpload(file);
+            else if (mode === 'txt' && file.name.endsWith('.txt')) handleTxtUpload(file);
+            else alert('지원하지 않는 파일 형식입니다.');
           }}
           style={{
             display: 'flex',
@@ -264,33 +275,36 @@ const CreateCompany = () => {
               padding: '1rem 2rem',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '1rem',
               fontWeight: 'bold',
-              transition: 'all 0.2s ease'
+              transition: '0.2s',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#007aff';
-              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.color = '#fff';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#eee';
               e.currentTarget.style.color = '#333';
             }}
           >
-            📁 JSON 파일 업로드
+            📁 {mode.toUpperCase()} 파일 업로드
             <input
               type="file"
-              accept=".json"
+              accept={mode === 'json' ? '.json' : '.txt'}
               style={{ display: 'none' }}
-              onChange={(e) => e.target.files[0] && handleJsonUpload(e.target.files[0])}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (mode === 'json') handleJsonUpload(file);
+                else handleTxtUpload(file);
+              }}
             />
           </label>
-          <p style={{ marginTop: '1rem', color: '#777' }}>
-            또는 이 영역에 파일을 끌어다 놓으세요
-          </p>
+          <p style={{ marginTop: '1rem', color: '#777' }}>또는 이 영역에 파일을 끌어다 놓으세요</p>
         </div>
       )}
-      {mode === 'json' && (
+
+      {mode === 'txt' && (
         <div style={{ marginTop: '1rem' }}>
           <button
             onClick={() => setShowExample(!showExample)}
@@ -302,7 +316,7 @@ const CreateCompany = () => {
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '0.95rem',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             }}
           >
             📄 예시 형식 {showExample ? '닫기' : '보기'}
@@ -317,21 +331,15 @@ const CreateCompany = () => {
               width: '100%',
               maxWidth: '700px',
               overflowX: 'auto',
-              marginTop: '0.5rem'
+              marginTop: '0.5rem',
             }}>
-{`{
-  "companyname": "강남병원",
-  "questions": [
-    {
-      "question": "병원 운영 시간은?",
-      "answer": "오전 9시부터 오후 6시까지 운영합니다."
-    },
-    {
-      "question": "응급실 있나요?",
-      "answer": "응급실은 24시간 운영됩니다."
-    }
-  ]
-}`}
+{`병원명: 강남병원
+
+Q: 병원 운영 시간은?
+A: 오전 9시부터 오후 6시까지 운영합니다.
+
+Q: 응급실 있나요?
+A: 응급실은 24시간 운영됩니다.`}
             </pre>
           )}
         </div>
