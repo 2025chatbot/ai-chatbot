@@ -1,146 +1,228 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Typography, TextField, Stack } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Stack, Tab, Tabs, Typography } from "@mui/material";
 import {
-    PageContainer,
-    PageTitle,
-    QnaBox,
-    RemoveBtn,
-    PrimaryButton,
-    SecondaryButton, StyledInput,
-} from '../components/CommonUI'; // 각 styled 컴포넌트가 있는 파일로 경로 조정 필요
+  PageContainer,
+  PrimaryButton,
+  QnaBox,
+  RemoveBtn,
+  StyledInput,
+} from "../components/CommonUI";
 
 const NoInfo = () => {
-    const { company } = useParams();
-    const [qnaList, setQnaList] = useState([]);
+  const { company } = useParams();
+  const [newQnaList, setNewQnaList] = useState([]);
+  const [oldQnaList, setOldQnaList] = useState([]);
+  const [tab, setTab] = useState(0); // 0: 신규 질문, 1: 기존 질문
 
-    useEffect(() => {
-        fetch(`http://localhost:3000/noinfo/${company}`)
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setQnaList(
-                        data.map(q => ({
-                            original: q.question,
-                            question: q.question,
-                            answer: '',
-                            count: q.count,
-                        }))
-                    );
-                } else {
-                    setQnaList([]);
-                }
-            })
-            .catch(err => {
-                console.error('❌ fetch 실패:', err);
-                setQnaList([]);
-            });
-    }, [company]);
-
-    const updateQna = (index, field, value) => {
-        const updated = [...qnaList];
-        updated[index][field] = value;
-        setQnaList(updated);
-    };
-
-    const removeQna = async (index) => {
-        const target = qnaList[index];
-        if (!window.confirm(`"${target.question}" 질문을 삭제할까요?`)) return;
-
-        const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: target.original })
-        });
-
-        if (res.ok) {
-            const updated = [...qnaList];
-            updated.splice(index, 1);
-            setQnaList(updated);
-        } else {
-            alert('서버 삭제 실패');
+  useEffect(() => {
+    // 신규 질문 목록 불러오기
+    fetch(`http://localhost:3000/noinfo/${company}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setNewQnaList(
+            data.map((q) => ({
+              original: q.question,
+              question: q.question,
+              answer: "",
+              count: q.count,
+            })),
+          );
         }
-    };
+      })
+      .catch((err) => {
+        console.error("신규 질문 fetch 실패:", err);
+      });
 
-    const handleSubmit = async () => {
-        const unanswered = qnaList.filter(q => q.question && !q.answer);
-        const valid = qnaList.filter(q => q.question && q.answer);
-
-        if (qnaList.length === 0) return alert('질문이 없습니다.');
-        if (valid.length === 0 && unanswered.length > 0)
-            return alert('답변이 입력된 질문이 없습니다.');
-
-        const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(valid)
-        });
-
-        if (res.ok) {
-            alert('학습 반영 완료!');
-            const remaining = qnaList.filter(
-                q => !valid.find(v => v.original === q.original)
-            );
-            setQnaList(remaining);
-        } else {
-            alert('저장 실패');
+    // 기존 질문답변 목록 (더미데이터)
+    fetch(`/${company}.questions.json`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setOldQnaList(
+            data.map((q) => ({
+              original: q.question,
+              question: q.question,
+              answer: q.answer,
+              count: 1,
+            })),
+          );
         }
-    };
+      })
+      .catch((err) => {
+        console.error("기존 질문 fetch 실패:", err);
+      });
+  }, [company]);
 
-    return (
-        <PageContainer>
-            <PageTitle>❓ 답변 대기 질문 목록</PageTitle>
+  const updateQna = (index, field, value, type) => {
+    const list = type === "new" ? [...newQnaList] : [...oldQnaList];
+    list[index][field] = value;
+    type === "new" ? setNewQnaList(list) : setOldQnaList(list);
+  };
 
-            {qnaList.length === 0 ? (
-                <Typography textAlign="center" color="text.secondary">
-                    새로운 질문이 없습니다.
-                </Typography>
-            ) : (
-                <>
-                    <Stack spacing={3}>
-                        {qnaList.map((qna, index) => (
-                            <QnaBox key={index}>
-                                <RemoveBtn onClick={() => removeQna(index)}>×</RemoveBtn>
-                                <div style={{ marginBottom: '0.75rem' }}>
-    <span style={{
-        fontSize: '0.85rem',
-        backgroundColor: '#e3f2fd',
-        color: '#1565c0',
-        padding: '0.2rem 0.6rem',
-        marginTop : '0.7rem',
-        borderRadius: '6px',
-        fontWeight: 500,
-        display: 'inline-block',
-    }}>
-      문의 횟수: {qna.count || 1}
-    </span>
-                                </div>
-                                <StyledInput
-                                    type="text"
-                                    placeholder="질문"
-                                    value={qna.question}
-                                    onChange={(e) => updateQna(index, 'question', e.target.value)}
-                                    style={{ marginBottom: '1rem' }}
-                                />
-                                <StyledInput
-                                type="text"
-                                placeholder="답변"
-                                value={qna.answer}
-                                onChange={(e) => updateQna(index, 'answer', e.target.value)}
-                            />
-                            </QnaBox>
-                        ))}
+  const removeQna = async (index, type) => {
+    const list = type === "new" ? [...newQnaList] : [...oldQnaList];
+    const target = list[index];
+    if (!window.confirm(`"${target.question}" 질문을 삭제할까요?`)) return;
 
-                        <div style={{ textAlign: 'end', marginTop: '2rem' }}>
-                            <PrimaryButton onClick={handleSubmit} style={{ marginLeft: '0.8rem' }}>
-                                저장하기
-                            </PrimaryButton>
-                        </div>
-                    </Stack>
-                </>
-            )}
-        </PageContainer>
-    );
+    const url =
+      type === "new"
+        ? `http://localhost:3000/noinfo/${company}`
+        : `/apple.questions.json`; // 더미이므로 실제 삭제 X
+
+    try {
+      if (type === "new") {
+        const res = await fetch(url, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: target.original }),
+        });
+        if (!res.ok) throw new Error("삭제 실패");
+      }
+      list.splice(index, 1);
+      type === "new" ? setNewQnaList(list) : setOldQnaList(list);
+    } catch (err) {
+      alert("서버 삭제 실패");
+    }
+  };
+
+  const handleSaveNew = async () => {
+    const unanswered = newQnaList.filter((q) => q.question && !q.answer);
+    const valid = newQnaList.filter((q) => q.question && q.answer);
+
+    if (newQnaList.length === 0) return alert("질문이 없습니다.");
+    if (valid.length === 0 && unanswered.length > 0)
+      return alert("답변이 입력된 질문이 없습니다.");
+
+    const res = await fetch(`http://localhost:3000/noinfo/${company}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(valid),
+    });
+
+    if (res.ok) {
+      alert("신규 질문 저장 완료!");
+      const remaining = newQnaList.filter(
+        (q) => !valid.find((v) => v.original === q.original),
+      );
+      setNewQnaList(remaining);
+    } else {
+      alert("저장 실패");
+    }
+  };
+
+  const handleSaveOld = () => {
+    alert("기존 질문 저장 기능은 추후 백엔드 API 연동 예정입니다.");
+  };
+
+  return (
+    <PageContainer>
+      <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 3 }}>
+        <Tab label="❓ 신규 QnA" />
+        <Tab label="✅ 기존 QnA" />
+      </Tabs>
+
+      {tab === 0 && (
+        <>
+          {newQnaList.length === 0 ? (
+            <Typography textAlign="center" color="text.secondary">
+              새로운 질문이 없습니다.
+            </Typography>
+          ) : (
+            <Stack spacing={3}>
+              {newQnaList.map((qna, index) => (
+                <QnaBox key={`new-${index}`}>
+                  <RemoveBtn onClick={() => removeQna(index, "new")}>
+                    ×
+                  </RemoveBtn>
+                  <div style={{ marginTop: "0.5rem" }}>
+                    <span
+                      style={{
+                        fontSize: "0.85rem",
+                        backgroundColor: "#e3f2fd",
+                        color: "#1565c0",
+                        padding: "0.2rem 0.6rem",
+                        borderRadius: "6px",
+                        fontWeight: 500,
+                        display: "inline-block",
+                      }}
+                    >
+                      문의 횟수: {qna.count || 1}
+                    </span>
+                  </div>
+                  <StyledInput
+                    type="text"
+                    placeholder="질문"
+                    value={qna.question}
+                    onChange={(e) =>
+                      updateQna(index, "question", e.target.value, "new")
+                    }
+                    style={{ marginBottom: "1rem" }}
+                  />
+                  <StyledInput
+                    type="text"
+                    placeholder="답변"
+                    value={qna.answer}
+                    onChange={(e) =>
+                      updateQna(index, "answer", e.target.value, "new")
+                    }
+                  />
+                </QnaBox>
+              ))}
+              <div style={{ textAlign: "end", marginTop: "2rem" }}>
+                <PrimaryButton onClick={handleSaveNew}>
+                  신규 질문 저장
+                </PrimaryButton>
+              </div>
+            </Stack>
+          )}
+        </>
+      )}
+
+      {tab === 1 && (
+        <>
+          {oldQnaList.length === 0 ? (
+            <Typography textAlign="center" color="text.secondary">
+              기존 질문이 없습니다.
+            </Typography>
+          ) : (
+            <Stack spacing={3}>
+              {oldQnaList.map((qna, index) => (
+                <QnaBox key={`old-${index}`}>
+                  <RemoveBtn onClick={() => removeQna(index, "old")}>
+                    ×
+                  </RemoveBtn>
+                  <StyledInput
+                    type="text"
+                    placeholder="질문"
+                    value={qna.question}
+                    onChange={(e) =>
+                      updateQna(index, "question", e.target.value, "old")
+                    }
+                    style={{ marginBottom: "1rem" }}
+                  />
+                  <StyledInput
+                    type="text"
+                    placeholder="답변"
+                    value={qna.answer}
+                    onChange={(e) =>
+                      updateQna(index, "answer", e.target.value, "old")
+                    }
+                  />
+                </QnaBox>
+              ))}
+              <div style={{ textAlign: "end", marginTop: "2rem" }}>
+                <PrimaryButton onClick={handleSaveOld}>
+                  기존 질문 저장
+                </PrimaryButton>
+              </div>
+            </Stack>
+          )}
+        </>
+      )}
+    </PageContainer>
+  );
 };
 
 export default NoInfo;
