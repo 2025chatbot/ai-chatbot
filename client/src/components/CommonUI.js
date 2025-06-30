@@ -1,20 +1,20 @@
-import styled from 'styled-components';
-import {Box, Button, Link} from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import React from 'react';
+import styled from "styled-components";
+import { Box, Button } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import React from "react";
 
 export const PageContainer = styled(Box)`
-    max-width: 800px;
-    margin: 5rem auto;
-    padding: 2rem;
-    background-color: #fdfdfd;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    box-sizing: border-box;
+  max-width: 800px;
+  margin: 5rem auto;
+  padding: 2rem;
+  background-color: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
 `;
 
-export const PageTitle =  styled.h2`
+export const PageTitle = styled.h2`
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 2rem;
@@ -23,7 +23,7 @@ export const PageTitle =  styled.h2`
 export const StyledInput = styled.input`
   width: 100%;
   padding: 1rem;
-  margin: 1rem auto;
+  margin: 0.5rem auto;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -37,30 +37,30 @@ export const StyledInput = styled.input`
 `;
 
 const LinkBehavior = React.forwardRef((props, ref) => (
-    <RouterLink ref={ref} {...props} />
+  <RouterLink ref={ref} {...props} />
 ));
 
 export const LinkButton = ({ to, children }) => (
-    <Button
-        type="button"
-        variant="outlined"
-        component={LinkBehavior}
-        to={to}
-        sx={{
-            width: '100%',
-            justifyContent: 'flex-start',
-            textTransform: 'none',
-            fontWeight: '500',
-            fontSize: '1.1rem',
-            color: 'black',
-            borderColor: '#ddd',
-            padding: '1rem 1.5rem',
-            borderRadius: '8px',
-            marginBottom: '0.75rem',
-        }}
-    >
-        {children}
-    </Button>
+  <Button
+    type="button"
+    variant="outlined"
+    component={LinkBehavior}
+    to={to}
+    sx={{
+      width: "100%",
+      justifyContent: "flex-start",
+      textTransform: "none",
+      fontWeight: "500",
+      fontSize: "1.1rem",
+      color: "black",
+      borderColor: "#ddd",
+      padding: "1rem 1.5rem",
+      borderRadius: "8px",
+      marginBottom: "0.75rem",
+    }}
+  >
+    {children}
+  </Button>
 );
 
 export const LinkList = styled.div`
@@ -77,7 +77,9 @@ export const QnaBox = styled.div`
   border-radius: 12px;
   background-color: #fafafa;
   position: relative;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-out;
   box-sizing: border-box;
 
   &.removing {
@@ -94,7 +96,7 @@ export const RemoveBtn = styled.button`
   height: 20px;
   border-radius: 50%;
   border: none;
-  background-color: #BDBDBD;
+  background-color: #bdbdbd;
   color: black;
   font-weight: bold;
   font-size: 0.9rem;
