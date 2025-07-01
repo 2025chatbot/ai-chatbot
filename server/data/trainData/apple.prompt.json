@@ -47,6 +47,30 @@
     {
       "role": "system",
       "content": "[{\"question\":\"병원장 머리 색은?\",\"answer\":\"검은색\"}]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
+    },
+    {
+      "role": "system",
+      "content": "[]"
     }
   ]
 }

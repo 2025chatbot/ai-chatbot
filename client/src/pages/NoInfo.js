@@ -35,8 +35,8 @@ const NoInfo = () => {
         console.error("신규 질문 fetch 실패:", err);
       });
 
-    // 기존 질문답변 목록 (더미데이터)
-    fetch(`/${company}.questions.json`)
+    // 기존 질문답변 목록 (API 연동)
+    fetch(`http://localhost:3000/questions/${company}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -69,10 +69,17 @@ const NoInfo = () => {
     const url =
       type === "new"
         ? `http://localhost:3000/noinfo/${company}`
-        : `/apple.questions.json`; // 더미이므로 실제 삭제 X
+        : `http://localhost:3000/questions/${company}`;
 
     try {
       if (type === "new") {
+        const res = await fetch(url, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: target.original }),
+        });
+        if (!res.ok) throw new Error("삭제 실패");
+      } else {
         const res = await fetch(url, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -112,8 +119,24 @@ const NoInfo = () => {
     }
   };
 
-  const handleSaveOld = () => {
-    alert("기존 질문 저장 기능은 추후 백엔드 API 연동 예정입니다.");
+  const handleSaveOld = async () => {
+    // 변경된 QnA만 추려서 PATCH 요청
+    const changed = oldQnaList.filter(q => q.question && q.answer);
+    if (changed.length === 0) return alert("수정된 QnA가 없습니다.");
+    try {
+      const res = await fetch(`http://localhost:3000/questions/${company}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changed),
+      });
+      if (res.ok) {
+        alert("기존 QnA 저장(수정) 완료!");
+      } else {
+        alert("저장(수정) 실패");
+      }
+    } catch (err) {
+      alert("서버 저장(수정) 실패");
+    }
   };
 
   return (
