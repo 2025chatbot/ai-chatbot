@@ -3,7 +3,10 @@ import {
     saveQna,
     handleRawData,
     handleQuery,
-    handleFileUpload
+    handleFileUpload,
+    getQuestions,
+    patchQuestions,
+    deleteQuestion
 } from '../controllers/qna.controller.js';
 import multer from 'multer';
 import path from 'path';
@@ -32,5 +35,8 @@ router.post('/addqna/:companyname', saveQna);
 router.post('/rawdata', handleRawData);
 router.post('/Query/:chatid', handleQuery);
 router.post('/upload', upload.single('file'), handleFileUpload);
+router.get('/questions/:company', getQuestions);
+router.patch('/questions/:company', patchQuestions);
+router.delete('/questions/:company', deleteQuestion);
 
 export default router;
