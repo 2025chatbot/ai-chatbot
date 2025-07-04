@@ -19,18 +19,38 @@ export async function getCompletionChatGPT(trainData, chatid, prompt) {
         const hasSession = chatSessions.has(chatid);
         const hasPromptCache = promptCache[companyname];
 
-        // 1. 프롬프트가 갱신되어 있지만 세션이 살아있는 경우 → 초기화
+        // 1. 프롬프트가 갱신되어 있지만 세션이 살아있는 경우 → 시스템 메시지만 업데이트
         if (hasSession && hasPromptCache) {
             const sessionMessages = chatSessions.get(chatid);
             const cachedMessages = promptCache[companyname]?.messages || [];
 
-            // 세션 메시지와 캐시 메시지 비교 (길이나 내용 다르면 초기화)
-            if (
-                sessionMessages.length !== cachedMessages.length ||
-                JSON.stringify(sessionMessages.slice(0, 3)) !== JSON.stringify(cachedMessages.slice(0, 3))
-            ) {
-                console.log(`[chatGPT] 세션 캐시와 promptCache 불일치 → 세션 초기화`);
-                chatSessions.delete(chatid);
+            // 시스템 메시지만 비교 (role: 'system'인 메시지들)
+            const sessionSystemMessages = sessionMessages.filter(msg => msg.role === 'system');
+            const cachedSystemMessages = cachedMessages.filter(msg => msg.role === 'system');
+            
+            // 추가 시스템 instruction들
+            const additionalSystemMessages = [
+                { role: 'system', content: instructions.reservationInstruction() },
+                { role: 'system', content: instructions.cancelInstruction() },
+                { role: 'system', content: instructions.scopeInstruction() }
+            ];
+            
+            const expectedSystemMessages = [...cachedSystemMessages, ...additionalSystemMessages];
+
+            // 시스템 메시지가 다르면 업데이트 (대화 내역은 유지)
+            if (JSON.stringify(sessionSystemMessages) !== JSON.stringify(expectedSystemMessages)) {
+                console.log(`[chatGPT] 학습 데이터 업데이트 감지 → 시스템 메시지만 업데이트`);
+                
+                // 사용자와 어시스턴트 대화만 추출
+                const conversationMessages = sessionMessages.filter(msg => 
+                    msg.role === 'user' || msg.role === 'assistant'
+                );
+                
+                // 새로운 시스템 메시지 + 기존 대화 내역으로 재구성
+                const updatedMessages = [...expectedSystemMessages, ...conversationMessages];
+                chatSessions.set(chatid, updatedMessages);
+                
+                console.log(`[chatGPT] 대화 내역 유지됨. 시스템 메시지 업데이트 완료: ${chatid}`);
             }
         }
 
