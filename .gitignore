@@ -16,3 +16,6 @@ server/*.log
 .vscode/
 .idea/
 *.iml
+
+# 테스트 웹사이트
+test.html
