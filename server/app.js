@@ -22,8 +22,13 @@ app.use((req, res, next) => {
     next();
 });
 
-// 기본 미들웨어 설정
-app.use(cors());
+// 기존 CORS 설정을 더 관대하게 변경
+app.use(cors({
+    origin: true,  // 모든 도메인 허용
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

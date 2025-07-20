@@ -17,7 +17,7 @@ const CompanyList = () => {
     const [companies, setCompanies] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/companies')
+        fetch('/companies')
             .then((res) => res.json())
             .then((data) => setCompanies(Array.isArray(data) ? data : []))
             .catch((err) => {
