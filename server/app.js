@@ -27,11 +27,22 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// 정적 파일 서빙 (필요 시 활성화)
-// app.use(express.static(path.join(__dirname, 'public')));
+// 🚀 위젯 스크립트 서빙
+app.get('/widget.js', (req, res) => {
+    const widgetPath = path.join(__dirname, '../widget/build/static/js/main.18832efe.js');
+    res.sendFile(widgetPath);
+});
 
-// 라우터 등록
+// 기존 API 라우터 등록
 app.use(router);
+
+// 🚀 관리자 페이지 정적 파일 서빙
+app.use('/admin', express.static(path.join(__dirname, '../admin/build')));
+
+// 🚀 관리자 페이지 SPA 지원 (이 부분을 가장 마지막에 배치)
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../admin/build/index.html'));
+});
 
 // Health Check
 app.get('/', (_, res) => res.sendStatus(200));
@@ -45,4 +56,6 @@ app.use((err, req, res, next) => {
 // 서버 시작
 app.listen(port, () => {
     logger.info(`🚀 Server started at http://localhost:${port}`);
+    logger.info(`📊 Admin Page: http://localhost:${port}/admin`);
+    logger.info(`🤖 Widget Script: http://localhost:${port}/widget.js`);
 });
