@@ -41,12 +41,10 @@ const ChatWidget = () => {
 
             const data = await response.json();
             
-            // 수정된 부분: content 추출 로직 개선
             let botContent = '';
             if (typeof data.content === 'string') {
                 botContent = data.content;
             } else if (data.content && typeof data.content === 'object') {
-                // OpenAI 응답 객체에서 content 추출
                 botContent = data.content.content || JSON.stringify(data.content);
             } else {
                 botContent = '응답을 받을 수 없습니다.';
@@ -80,9 +78,12 @@ const ChatWidget = () => {
                         bottom: 24,
                         right: 24,
                         zIndex: 9999,
+                        // 🛡️ 최소한의 방어만 적용
+                        fontSize: '16px',
+                        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                     }}
                 >
-                    <ChatIcon />
+                    <ChatIcon sx={{ fontSize: '24px' }} />
                 </Fab>
             </Zoom>
 
@@ -101,6 +102,14 @@ const ChatWidget = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
+                        // 🛡️ 위젯 전체에 기본 보호 적용
+                        fontSize: '20px',
+                        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                        lineHeight: 1.5,
+                        '& *': {
+                            fontSize: 'inherit',
+                            fontFamily: 'inherit',
+                        }
                     }}
                 >
                     {/* 헤더 */}
@@ -114,10 +123,10 @@ const ChatWidget = () => {
                             backgroundColor: '#f5f5f5',
                         }}
                     >
-                        <Typography variant="h6">
+                        <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 600 }}>
                             {window.CHATBOT_CONFIG?.title || '고객 상담'}
                         </Typography>
-                        <IconButton onClick={() => setIsOpen(false)} size="small">
+                        <IconButton onClick={() => setIsOpen(false)} size="large">
                             <CloseIcon />
                         </IconButton>
                     </Box>
@@ -135,6 +144,7 @@ const ChatWidget = () => {
                                             backgroundColor: '#f0f0f0',
                                             color: '#333',
                                             borderRadius: 5,
+                                            fontSize: '16px', // 🛡️ 명시적 크기 지정
                                         }}
                                     >
                                         안녕하세요! 무엇을 도와드릴까요?
@@ -155,6 +165,8 @@ const ChatWidget = () => {
                                             backgroundColor: msg.role === 'user' ? '#d1e7ff' : '#f0f0f0',
                                             color: '#333',
                                             borderRadius: 5,
+                                            fontSize: '16px', // 🛡️ 명시적 크기 지정
+                                            lineHeight: 1.4,
                                         }}
                                     >
                                         {typeof msg.content === 'object'
@@ -186,9 +198,15 @@ const ChatWidget = () => {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                            sx={{ mr: 1 }}
+                            sx={{ 
+                                mr: 1,
+                                fontSize: '16px', // 🛡️ 명시적 크기 지정
+                                '& .MuiInputBase-input': {
+                                    fontSize: '16px',
+                                }
+                            }}
                         />
-                        <IconButton type="submit" color="primary">
+                        <IconButton type="submit" color="primary" size="large">
                             <SendIcon />
                         </IconButton>
                     </Box>
