@@ -54,10 +54,6 @@ OPENAI_API_KEY=your_openai_api_key_here
 # 챗봇 모델 설정
 CHATAPI_MODEL=chatgpt
 CHATAPI_URL=http://localhost:5000
-
-# 서버 설정 (선택)
-PORT=3000
-NODE_ENV=development
 ```
 
 ### 4. 프로젝트 빌드

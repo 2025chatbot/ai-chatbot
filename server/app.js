@@ -45,7 +45,9 @@ app.get('/widget-loader.js', async (req, res) => {
 
         const mainJs = manifest.files['main.js'];
         const mainCss = manifest.files['main.css'];
-        const baseUrl = process.env.BASE_URL || `https://${req.get('host')}`;
+        
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const baseUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
 
         const loaderScript = `
 (function() {
