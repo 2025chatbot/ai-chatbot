@@ -3,6 +3,7 @@ import cors from 'cors';
 import log4js from 'log4js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs/promises';
 import router from './routes/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,33 +17,91 @@ log4js.configure({
 });
 const logger = log4js.getLogger('app');
 
-// 요청 로깅 (모든 요청에 대해 기록)
+// 요청 로깅
 app.use((req, res, next) => {
     logger.info(`Request URL: ${req.method} ${req.originalUrl}`);
     next();
 });
 
-// 기본 미들웨어 설정
-app.use(cors());
+// CORS 및 Parser 설정
+app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// 정적 파일 서빙 (필요 시 활성화)
-// app.use(express.static(path.join(__dirname, 'public')));
+// 🚀 위젯 관련 설정
+const widgetBuildPath = path.join(__dirname, '../widget/build');
+app.use('/widget-static', express.static(widgetBuildPath));
 
-// 라우터 등록
+app.get('/widget-loader.js', async (req, res) => {
+    try {
+        const manifestPath = path.join(widgetBuildPath, 'asset-manifest.json');
+        const manifestData = await fs.readFile(manifestPath, 'utf-8');
+        const manifest = JSON.parse(manifestData);
+
+        const mainJs = manifest.files['main.js'];
+        const mainCss = manifest.files['main.css'];
+        
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const baseUrl = process.env.BASE_URL || `${protocol}://${req.get('host')}`;
+
+        const loaderScript = `
+(function() {
+    console.log('Widget loader executed.');
+    const widgetBaseUrl = '${baseUrl}/widget-static';
+
+    ${mainCss ? `
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = \`\${widgetBaseUrl}${mainCss}\`;
+    document.head.appendChild(link);
+    console.log('CSS injected:', link.href);
+    ` : ''}
+
+    ${mainJs ? `
+    const script = document.createElement('script');
+    script.defer = true;
+    script.src = \`\${widgetBaseUrl}${mainJs}\`;
+    document.body.appendChild(script);
+    console.log('Script injected:', script.src);
+    ` : ''}
+})();
+        `;
+
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.send(loaderScript);
+
+    } catch (error) {
+        logger.error('Widget loader error:', error);
+        res.status(500).send('// Widget failed to load.');
+    }
+});
+
+// API 라우터 및 관리자 페이지
 app.use(router);
+app.use('/admin', express.static(path.join(__dirname, '../admin/build')));
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../admin/build/index.html'));
+});
 
 // Health Check
 app.get('/', (_, res) => res.sendStatus(200));
 
-// 전역 에러 핸들러
+// 에러 핸들러
 app.use((err, req, res, next) => {
-    console.error('Unhandled Error:', err);
+    logger.error('Unhandled Error:', err);
     res.status(500).json({ error: err.message });
 });
 
 // 서버 시작
 app.listen(port, () => {
     logger.info(`🚀 Server started at http://localhost:${port}`);
+    logger.info(`📊 Admin Page: http://localhost:${port}/admin`);
+    logger.info(`🤖 Widget Loader Script: http://localhost:${port}/widget-loader.js`);
 });
+

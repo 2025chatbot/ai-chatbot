@@ -17,7 +17,7 @@ const CompanyList = () => {
     const [companies, setCompanies] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/companies')
+        fetch('/companies')
             .then((res) => res.json())
             .then((data) => setCompanies(Array.isArray(data) ? data : []))
             .catch((err) => {
@@ -43,13 +43,13 @@ const CompanyList = () => {
                             </Typography>
 
                             <Stack direction="row" spacing={2} flexWrap="wrap">
-                                <Button variant="outlined" component={Link} to={`/company/${name}`}>
+                                <Button variant="outlined" component={Link} to={`/admin/company/${name}`}>
                                     병원 페이지 이동
                                 </Button>
-                                <Button variant="outlined" component={Link} to={`/addqna/${name}`}>
+                                <Button variant="outlined" component={Link} to={`/admin/addqna/${name}`}>
                                     Q&A 업데이트
                                 </Button>
-                                <Button variant="outlined" component={Link} to={`/noinfo/${name}`}>
+                                <Button variant="outlined" component={Link} to={`/admin/noinfo/${name}`}>
                                     답변 대기 목록
                                 </Button>
                             </Stack>
